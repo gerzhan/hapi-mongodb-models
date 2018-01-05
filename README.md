@@ -5,7 +5,9 @@
 
 # Hapi-multidb
 
-This is a plugin to share a common MongoDB, Postgres or MySQL connection pool across the whole Hapi server.
+This is a plugin to share a common MongoDB (through Mongoose), Postgres or MySQL connection pool across the whole Hapi server.
+
+**Currently working on the first version (sorry, only MongoDB support for now)**
 
 Options can be a single object with the following keys or an array of the same kind if you need multiple connections :
 
