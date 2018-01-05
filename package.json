@@ -1,22 +1,26 @@
 {
   "name": "hapi-mongodb",
-  "version": "7.1.0",
-  "description": "A simple Hapi MongoDB connection plugin.",
+  "version": "0.0.1",
+  "description": "A Hapi Multi database connection plugin. Use it to access one or several connections from MongoDB (with Mongoose), Postgres or MySQL through server or request properties.",
   "main": "lib/index.js",
   "scripts": {
     "test": "lab -M 5000 -t 100 -a code -L"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/Marsup/hapi-mongodb.git"
+    "url": "git@github.com:oPauloChaves/hapi-multidb.git"
   },
   "keywords": [
     "hapi",
-    "mongodb"
+    "mongodb",
+    "mongoose",
+    "knex",
+    "postgres",
+    "mysql"
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Marsup/hapi-mongodb/issues"
+    "url": "https://github.com/oPauloChaves/hapi-multidb/issues"
   },
   "engines": {
     "node": ">= 8"
