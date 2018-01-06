@@ -1,42 +1,49 @@
 {
-  "name": "hapi-mongodb",
-  "version": "0.0.1",
-  "description": "A Hapi Multi database connection plugin. Use it to access one or several connections from MongoDB (with Mongoose), Postgres or MySQL through server or request properties.",
+  "name": "hapi-mongoose-models",
+  "version": "0.1.0",
+  "description":
+    "A Hapi MongoDB (via Mongoose) plugin. Acces one or several connections through server or request",
   "main": "lib/index.js",
   "scripts": {
-    "test": "lab -M 5000 -t 100 -a code -L"
+    "test": "lab -M 5000 -t 100 -a code -L",
+    "format": "prettier --write \"./**/*.js\""
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:oPauloChaves/hapi-multidb.git"
+    "url": "git@github.com:oPauloChaves/hapi-mongoose-models.git"
   },
-  "keywords": [
-    "hapi",
-    "mongodb",
-    "mongoose",
-    "knex",
-    "postgres",
-    "mysql"
-  ],
+  "keywords": ["hapi", "mongodb", "mongoose"],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/oPauloChaves/hapi-multidb/issues"
+    "url": "https://github.com/oPauloChaves/hapi-mongoose-models/issues"
   },
   "engines": {
     "node": ">= 8"
   },
   "dependencies": {
     "joi": "13.x.x",
-    "mongodb": "2.x.x"
+    "mongoose": "^5.0.0-rc2"
   },
   "devDependencies": {
-    "bluebird": "3.x.x",
     "code": "5.x.x",
     "hapi": ">= 17.x.x",
-    "hoek": "5.x.x",
-    "lab": "15.x.x"
+    "lab": "15.x.x",
+    "eslint": "^4.14.0",
+    "eslint-config-standard": "^11.0.0-beta.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "prettier": "^1.9.2"
   },
   "peerDependencies": {
     "hapi": ">= 17.x.x"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "printWidth": 80,
+    "semi": false,
+    "trailingComma": "all",
+    "bracketSpacing": false
   }
 }
