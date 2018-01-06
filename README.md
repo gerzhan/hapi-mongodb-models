@@ -3,11 +3,9 @@
 [![Dependencies Status](https://david-dm.org/Marsup/hapi-mongodb.svg)](https://david-dm.org/Marsup/hapi-mongodb)
 [![DevDependencies Status](https://david-dm.org/Marsup/hapi-mongodb/dev-status.svg)](https://david-dm.org/Marsup/hapi-mongodb#info=devDependencies)
 
-# Hapi-multidb
+# Hapi-mongodb-models
 
-This is a plugin to share a common MongoDB (through Mongoose), Postgres or MySQL connection pool across the whole Hapi server.
-
-**Currently working on the first version (sorry, only MongoDB support for now)**
+A Hapi MongoDB (via Mongoose) plugin. Access one or several connections and optionally expose your model classes through server and request
 
 Options can be a single object with the following keys or an array of the same kind if you need multiple connections :
 
