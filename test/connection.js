@@ -22,6 +22,19 @@ describe('Hapi server', () => {
       expect(err).to.exist()
     }
   })
+
+  it('should reject invalid decorate', async () => {
+    try {
+      await server.register({
+        plugin: require('../'),
+        options: {
+          decorate: 1,
+        },
+      })
+    } catch (err) {
+      expect(err).to.exist()
+    }
+  })
 })
 
 // 'use strict'
