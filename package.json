@@ -1,8 +1,8 @@
 {
-  "name": "hapi-mongoose-models",
+  "name": "hapi-mongodb-models",
   "version": "0.1.0",
   "description":
-    "A Hapi MongoDB (via Mongoose) plugin. Acces one or several connections through server or request",
+    "A Hapi MongoDB (via Mongoose) plugin. Access one or several connections through server or request",
   "main": "lib/index.js",
   "scripts": {
     "test": "lab -M 5000 -t 100 -a code -L",
@@ -10,12 +10,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:oPauloChaves/hapi-mongoose-models.git"
+    "url": "git@github.com:oPauloChaves/hapi-mongodb-models.git"
   },
   "keywords": ["hapi", "mongodb", "mongoose"],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/oPauloChaves/hapi-mongoose-models/issues"
+    "url": "https://github.com/oPauloChaves/hapi-mongodb-models/issues"
   },
   "engines": {
     "node": ">= 8"
