@@ -3,11 +3,9 @@
 [![Dependencies Status](https://david-dm.org/Marsup/hapi-mongodb.svg)](https://david-dm.org/Marsup/hapi-mongodb)
 [![DevDependencies Status](https://david-dm.org/Marsup/hapi-mongodb/dev-status.svg)](https://david-dm.org/Marsup/hapi-mongodb#info=devDependencies)
 
-# Hapi-multidb
+# Hapi-mongodb-models
 
-This is a plugin to share a common MongoDB (through Mongoose), Postgres or MySQL connection pool across the whole Hapi server.
-
-**Currently working on the first version (sorry, only MongoDB support for now)**
+A Hapi MongoDB (via Mongoose) plugin. Access one or several connections and optionally expose your model classes through server and request
 
 Options can be a single object with the following keys or an array of the same kind if you need multiple connections :
 
@@ -15,13 +13,12 @@ Options can be a single object with the following keys or an array of the same k
     - defaults to `mongodb://localhost:27017`
 - settings: *Optional.* Provide extra settings to the connection, see [documentation](http://mongodb.github.io/node-mongodb-native/driver-articles/mongoclient.html#mongoclient-connect-options).
 - decorate: *Optional.* Rather have exposed objects accessible through server and request decorations. You cannot mix different types of decorations.
-    - If `true`, `server.mongo` or `request.mongo`
+    - If `true`, `server.db` or `request.db`
     - If it's a string, `server.<string>` or `request.<string>`
 
-Several objects are exposed by this plugin :
+Some objects are exposed under `server` and `request` by this plugin:
 
-- `db` : connection object to the database, if an array was provided for the configuration, it will be an array of connections in the same order
-- `lib` : mongodb library in case you need to use it
+- `connection` : Mongoose connection object, if an array was provided for the configuration, it will be an array of connections in the same order
 - `ObjectID` : mongodb ObjectID constructor in case you need to use it
 
 Usage example :
@@ -42,7 +39,7 @@ const launchServer = async function() {
     const server = Hapi.Server();
     
     await server.register({
-        plugin: require('hapi-mongodb'),
+        plugin: require('hapi-mongodb-models'),
         options: dbOpts
     });
 
@@ -51,8 +48,8 @@ const launchServer = async function() {
         path: '/users/{id}',
         async handler(request) {
 
-            const db = request.mongo.db;
-            const ObjectID = request.mongo.ObjectID;
+            const db = request.db.connection;
+            const ObjectID = request.db.ObjectID;
 
             try {
                 const result = await db.collection('users').findOne({  _id: new ObjectID(request.params.id) });
@@ -79,4 +76,4 @@ launchServer().catch((err) => {
 * Hapi >= 17
 * Node.js >= 8
 
-Ships with `mongodb` >= 2.
+Ships with `mongoose` 5

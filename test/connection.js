@@ -1,322 +1,262 @@
-'use strict';
-
-const Hapi = require('hapi');
-const Hoek = require('hoek');
-const Lab = require('lab');
-const Mongodb = require('mongodb');
-const { describe, it, beforeEach, expect } = exports.lab = Lab.script();
+const Path = require('path')
+const Hapi = require('hapi')
+const Lab = require('lab')
+const pkg = require('../package.json')
+const Mongoose = require('mongoose')
+const {describe, it, beforeEach, expect} = (exports.lab = Lab.script())
 
 describe('Hapi server', () => {
+  let server
 
-    let server;
+  beforeEach(() => {
+    server = Hapi.Server()
+  })
 
-    beforeEach(() => {
+  it('should reject invalid options', async () => {
+    try {
+      await server.register({
+        plugin: require('../'),
+        options: {urri: 'mongodb://localhost:27017/test'},
+      })
+    } catch (err) {
+      expect(err).to.exist()
+    }
+  })
 
-        server = Hapi.Server();
-    });
+  it('should reject invalid decorate', async () => {
+    try {
+      await server.register({
+        plugin: require('../'),
+        options: {decorate: 1},
+      })
+    } catch (err) {
+      expect(err).to.exist()
+    }
+  })
 
-    it('should reject invalid options', async () => {
+  it('should fail with no mongodb listening', async () => {
+    try {
+      await server.register({
+        plugin: require('../'),
+        options: {url: 'mongodb://localhost:27018'},
+      })
+    } catch (err) {
+      expect(err).to.exist()
+    }
+  })
 
-        try {
-            await server.register({
-                plugin: require('../'),
-                options: {
-                    urll: 'mongodb://localhost:27017'
-                }
-            });
-        }
-        catch (err) {
+  it('should register the plugin with just URL', async () => {
+    await server.register({
+      plugin: require('../'),
+      options: {url: 'mongodb://localhost:27017'},
+    })
+  })
 
-            expect(err).to.exist();
-        }
-    });
+  it('should register the plugin with no plugin options', async () => {
+    await server.register({plugin: require('../')})
+    const plugin = server.plugins[pkg.name]
+    expect(plugin.connection).to.exist()
+    expect(plugin.connection).to.be.instanceof(Mongoose.Mongoose)
+  })
 
-    it('should reject invalid decorate', async () => {
+  it('should log configuration upon successfull connection', async () => {
+    let logEntry
+    server.events.once('log', entry => {
+      logEntry = entry
+    })
 
-        try {
-            await server.register({
-                plugin: require('../'),
-                options: {
-                    decorate: 1
-                }
-            });
-        }
-        catch (err) {
-            expect(err).to.exist();
-        }
-    });
+    await server.register({
+      plugin: require('../'),
+      options: {url: 'mongodb://localhost:27017'},
+    })
 
-    it('should fail with no mongodb listening', async () => {
+    expect(logEntry.data).to.exist()
+    expect(logEntry.data)
+      .to.be.a.string()
+      .and.contain('mongodb://localhost:27017')
+  })
 
-        try {
-            await server.register({
-                plugin: require('../'),
-                options: {
-                    url: 'mongodb://localhost:27018'
-                }
-            });
-        }
-        catch (err) {
+  it('should register the plugin with URL and settings', async () => {
+    await server.register({
+      plugin: require('../'),
+      options: {
+        url: 'mongodb://localhost:27017',
+        settings: {poolSize: 10},
+      },
+    })
+  })
 
-            expect(err).to.exist();
-        }
-    });
+  it('should find the plugin exposed objects', async () => {
+    await server.register({
+      plugin: require('../'),
+      options: {url: 'mongodb://localhost:27017'},
+    })
 
-    it('should be able to register plugin with just URL', async () => {
+    server.route({
+      method: 'GET',
+      path: '/',
+      handler(request) {
+        const plugin = request.server.plugins[pkg.name]
+        expect(plugin.conenction).to.exist()
+        expect(plugin.ObjectId).to.exist()
+        return Promise.resolve(null)
+      },
+    })
 
-        await server.register({
-            plugin: require('../'),
-            options: {
-                url: 'mongodb://localhost:27017'
-            }
-        });
-    });
+    await server.inject({method: 'GET', url: '/'})
+  })
 
-    it('should log configuration upon successfull connection', async () => {
+  it('should find the plugin on decorated objects', async () => {
+    await server.register({
+      plugin: require('../'),
+      options: {
+        url: 'mongodb://localhost:27017',
+        decorate: true,
+      },
+    })
 
-        let logEntry;
-        server.events.once('log', (entry) => {
+    expect(server.db.connection).to.exist()
+    expect(server.db.ObjectId).to.exist()
 
-            logEntry = entry;
-        });
+    server.route({
+      method: 'GET',
+      path: '/',
+      handler(request) {
+        expect(request.db.connection).to.exist()
+        expect(request.db.ObjectId).to.exist()
+        return Promise.resolve(null)
+      },
+    })
 
-        await server.register({
-            plugin: require('../'),
-            options: {
-                url: 'mongodb://localhost:27017'
-            }
-        });
+    await server.inject({method: 'GET', url: '/'})
+  })
 
-        expect(logEntry).to.equal({
-            channel: 'app',
-            timestamp: logEntry.timestamp,
-            tags: ['hapi-mongodb', 'info'],
-            data: 'MongoClient connection created for {"url":"mongodb://localhost:27017"}'
-        });
-    });
+  it('should find the plugin on custom decorated objects', async () => {
+    await server.register({
+      plugin: require('../'),
+      options: {
+        url: 'mongodb://localhost:27017',
+        decorate: 'mongo',
+      },
+    })
 
-    it('should log configuration upon successfull connection, obscurifying DB password', async () => {
+    expect(server.mongo.connection).to.exist()
+    expect(server.mongo.ObjectId).to.exist()
 
-        let logEntry;
-        server.events.once('log', (entry) => {
+    server.route({
+      method: 'GET',
+      path: '/',
+      handler(request) {
+        expect(request.mongo.connection).to.exist()
+        expect(request.mongo.ObjectId).to.exist()
+        return Promise.resolve(null)
+      },
+    })
 
-            logEntry = entry;
-        });
+    await server.inject({method: 'GET', url: '/'})
+  })
 
-        const originalConnect = Mongodb.MongoClient.connect;
-        let connected = false;
-        Mongodb.MongoClient.connect = (url, options) => {
+  it('should fail to mix different decorations', async () => {
+    try {
+      await server.register({
+        plugin: require('../'),
+        options: [
+          {url: 'mongodb://localhost:27017', decorate: true},
+          {url: 'mongodb://localhost:27017', decorate: 'foo'},
+        ],
+      })
+    } catch (err) {
+      expect(err).to.be.an.error(
+        'You cannot mix different types of decorate options',
+      )
+    }
+  })
 
-            Mongodb.MongoClient.connect = originalConnect;
-            expect(url).to.equal('mongodb://user:abcdefg@example.com:27017');
-            expect(options).to.equal({ poolSize: 11 });
-            connected = true;
-            return Promise.resolve({});
-        };
-        await server.register({
-            plugin: require('../'),
-            options: {
-                url: 'mongodb://user:abcdefg@example.com:27017',
-                settings: {
-                    poolSize: 11
-                }
-            }
-        });
+  it('should be able to have multiple connections', async () => {
+    await server.register({
+      plugin: require('../'),
+      options: [
+        {url: 'mongodb://localhost:27017/test0'},
+        {url: 'mongodb://localhost:27017/test1'},
+      ],
+    })
 
-        expect(connected).to.be.true();
-        expect(logEntry).to.equal({
-            channel: 'app',
-            timestamp: logEntry.timestamp,
-            tags: ['hapi-mongodb', 'info'],
-            data: 'MongoClient connection created for {"url":"mongodb://user:******@example.com:27017","settings":{"poolSize":11}}'
-        });
-    });
+    const plugin = server.plugins[pkg.name]
+    expect(plugin.connection)
+      .to.be.an.array()
+      .and.to.have.length(2)
+    plugin.connection.forEach((conn, i) => {
+      expect(conn).to.be.instanceof(Mongoose.Mongoose)
+      expect(conn.connections[0].db.databaseName).to.be.equal(`test${i}`)
+    })
+  })
 
-    it('should be able to register plugin with URL and settings', async () => {
+  it('should register models and access them via plugin', async () => {
+    await server.register({
+      plugin: require('../'),
+      options: {
+        url: 'mongodb://localhost:27017/test',
+        rootDir: Path.join(__dirname, '../'),
+        models: [{path: 'test/models/User'}],
+      },
+    })
 
-        await server.register({
-            plugin: require('../'),
-            options: {
-                url: 'mongodb://localhost:27017',
-                settings: {
-                    poolSize: 10
-                }
-            }
-        });
-    });
+    const plugin = server.plugins[pkg.name]
+    expect(plugin.UserModel).to.exist()
+  })
 
-    it('should be able to find the plugin exposed objects', async () => {
+  it('should register models with custom name and expose it', async () => {
+    await server.register({
+      plugin: require('../'),
+      options: {
+        url: 'mongodb://localhost:27017/test',
+        rootDir: Path.join(__dirname, '../'),
+        models: [
+          {
+            path: 'test/models/User',
+            name: 'UserClass',
+          },
+        ],
+      },
+    })
 
-        await server.register({
-            plugin: require('../'),
-            options: {
-                url: 'mongodb://localhost:27017'
-            }
-        });
+    const plugin = server.plugins[pkg.name]
+    expect(plugin.UserClass).to.exist()
+  })
 
-        server.route({
-            method: 'GET',
-            path: '/',
-            handler(request) {
+  it('should register models expose them via server', async () => {
+    await server.register({
+      plugin: require('../'),
+      options: {
+        url: 'mongodb://localhost:27017/test',
+        decorate: true,
+        models: [
+          {
+            path: Path.join(__dirname, '../', 'test', 'models', 'User'),
+          },
+        ],
+      },
+    })
 
-                const plugin = request.server.plugins['hapi-mongodb'];
-                expect(plugin.db).to.exist();
-                expect(plugin.lib).to.exist();
-                expect(plugin.ObjectID).to.exist();
-                return Promise.resolve(null);
-            }
-        });
+    expect(server.db.UserModel).to.exist()
 
-        await server.inject({ method: 'GET', url: '/' });
-    });
+    server.route({
+      method: 'GET',
+      path: '/',
+      handler(request) {
+        expect(request.db.UserModel).to.exist()
+        return Promise.resolve(null)
+      },
+    })
 
-    it('should be able to find the plugin on decorated objects', async () => {
+    await server.inject({method: 'GET', url: '/'})
+  })
 
-        await server.register({
-            plugin: require('../'),
-            options: {
-                url: 'mongodb://localhost:27017',
-                decorate: true
-            }
-        });
+  it('should disconnect if the server stops', async () => {
+    await server.register({plugin: require('../')})
 
-        expect(server.mongo.db).to.exist();
-        expect(server.mongo.lib).to.exist();
-        expect(server.mongo.ObjectID).to.exist();
-
-        server.route({
-            method: 'GET',
-            path: '/',
-            handler(request) {
-
-                expect(request.mongo.db).to.exist();
-                expect(request.mongo.lib).to.exist();
-                expect(request.mongo.ObjectID).to.exist();
-                return Promise.resolve(null);
-            }
-        });
-
-        await server.inject({ method: 'GET', url: '/' });
-    });
-
-    it('should be able to find the plugin on custom decorated objects', async () => {
-
-        await server.register({
-            plugin: require('../'),
-            options: {
-                url: 'mongodb://localhost:27017',
-                decorate: 'db'
-            }
-        });
-
-        expect(server.db.db).to.exist();
-        expect(server.db.lib).to.exist();
-        expect(server.db.ObjectID).to.exist();
-
-        server.route({
-            method: 'GET',
-            path: '/',
-            handler(request) {
-
-                expect(request.db.db).to.exist();
-                expect(request.db.lib).to.exist();
-                expect(request.db.ObjectID).to.exist();
-                return Promise.resolve(null);
-            }
-        });
-
-        await server.inject({ method: 'GET', url: '/' });
-    });
-
-    it('should fail to mix different decorations', async () => {
-
-        try {
-            await server.register({
-                plugin: require('../'),
-                options: [{
-                    url: 'mongodb://localhost:27017',
-                    decorate: true
-                }, {
-                    url: 'mongodb://localhost:27017',
-                    decorate: 'foo'
-                }]
-            });
-        }
-        catch (err) {
-
-            expect(err).to.be.an.error('You cannot mix different types of decorate options');
-        }
-    });
-
-    it('should connect to a mongodb instance without providing plugin settings', async () => {
-
-        await server.register({ plugin: require('../') });
-
-        const db = server.plugins['hapi-mongodb'].db;
-        expect(db).to.be.instanceof(Mongodb.Db);
-        expect(db.databaseName).to.equal('test');
-    });
-
-    it('should use the correct default mongodb url in options', async () => {
-
-        const originalConnect = Mongodb.MongoClient.connect;
-        let connected = false;
-        Mongodb.MongoClient.connect = (url, options) => {
-
-            Mongodb.MongoClient.connect = originalConnect;
-            expect(url).to.equal('mongodb://localhost:27017/test');
-            connected = true;
-            return Promise.resolve({ dbInstance: true });
-        };
-
-        await server.register({ plugin: require('../') });
-
-        expect(connected).to.be.true();
-        const db = server.plugins['hapi-mongodb'].db;
-        expect(db).to.equal({ dbInstance: true });
-    });
-
-    it('should be able to have multiple connections', async () => {
-
-        await server.register({
-            plugin: require('../'),
-            options: [{ url: 'mongodb://localhost:27017/test0' }, { url: 'mongodb://localhost:27017/test1' }]
-        });
-
-        const plugin = server.plugins['hapi-mongodb'];
-        expect(plugin.db).to.be.an.array().and.to.have.length(2);
-        plugin.db.forEach((db, i) => {
-
-            expect(db).to.be.instanceof(Mongodb.Db);
-            expect(db.databaseName).to.equal('test' + i);
-        });
-    });
-
-    it('should require the "promiseLibrary" before passing it to mongodb', async () => {
-
-        await server.register({
-            plugin: require('../'),
-            options: {
-                settings: {
-                    promiseLibrary: 'bluebird'
-                }
-            }
-        });
-    });
-
-    it('should disconnect if the server stops', async () => {
-
-        await server.register({
-            plugin: require('../'),
-            options: {
-                settings: {
-                    promiseLibrary: 'bluebird'
-                }
-            }
-        });
-
-        await server.initialize();
-        await server.stop();
-        await Hoek.wait(100); // Let the connections end.
-    });
-});
+    // TODO make sure all connections are closed
+    await server.initialize()
+    await server.stop()
+  })
+})

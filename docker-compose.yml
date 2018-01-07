@@ -1,0 +1,14 @@
+version: '2'
+
+services:
+  mongo:
+    image: mongo:3.6
+    container_name: hapi-mongodb
+    volumes:
+      - "db-data:/data/db"
+    ports:
+      - "27017:27017"
+    command: --smallfiles
+
+volumes:
+  db-data:
