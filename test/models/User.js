@@ -22,6 +22,7 @@ class UserModel {
   }
 
   async create({username}) {
+    // eslint-disable-next-line
     const newUser = new this.model({username})
 
     if (await this.exists(username)) {
@@ -47,4 +48,4 @@ class UserModel {
   }
 }
 
-module.exports = {UserModel, UserSchema}
+module.exports = UserModel

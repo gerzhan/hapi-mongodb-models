@@ -1,3 +1,4 @@
+const Path = require('path')
 const Hapi = require('hapi')
 const Lab = require('lab')
 const pkg = require('../package.json')
@@ -15,7 +16,7 @@ describe('Hapi server', () => {
     try {
       await server.register({
         plugin: require('../'),
-        options: {url: 'mongodb://localhost:27017/test'},
+        options: {urri: 'mongodb://localhost:27017/test'},
       })
     } catch (err) {
       expect(err).to.exist()
@@ -190,6 +191,67 @@ describe('Hapi server', () => {
     })
   })
 
+  it('should register models and access them via plugin', async () => {
+    await server.register({
+      plugin: require('../'),
+      options: {
+        url: 'mongodb://localhost:27017/test',
+        rootDir: Path.join(__dirname, '../'),
+        models: [{path: 'test/models/User'}],
+      },
+    })
+
+    const plugin = server.plugins[pkg.name]
+    expect(plugin.UserModel).to.exist()
+  })
+
+  it('should register models with custom name and expose it', async () => {
+    await server.register({
+      plugin: require('../'),
+      options: {
+        url: 'mongodb://localhost:27017/test',
+        rootDir: Path.join(__dirname, '../'),
+        models: [
+          {
+            path: 'test/models/User',
+            name: 'UserClass',
+          },
+        ],
+      },
+    })
+
+    const plugin = server.plugins[pkg.name]
+    expect(plugin.UserClass).to.exist()
+  })
+
+  it('should register models expose them via server', async () => {
+    await server.register({
+      plugin: require('../'),
+      options: {
+        url: 'mongodb://localhost:27017/test',
+        decorate: true,
+        models: [
+          {
+            path: Path.join(__dirname, '../', 'test', 'models', 'User'),
+          },
+        ],
+      },
+    })
+
+    expect(server.db.UserModel).to.exist()
+
+    server.route({
+      method: 'GET',
+      path: '/',
+      handler(request) {
+        expect(request.db.UserModel).to.exist()
+        return Promise.resolve(null)
+      },
+    })
+
+    await server.inject({method: 'GET', url: '/'})
+  })
+
   it('should disconnect if the server stops', async () => {
     await server.register({plugin: require('../')})
 
@@ -197,6 +259,4 @@ describe('Hapi server', () => {
     await server.initialize()
     await server.stop()
   })
-
-  it.skip('test registering models, baseDir, model correct params')
 })
