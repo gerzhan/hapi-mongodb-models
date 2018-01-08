@@ -202,7 +202,7 @@ describe('Hapi server', () => {
     })
 
     const plugin = server.plugins[pkg.name]
-    expect(plugin.UserModel).to.exist()
+    expect(plugin.userModel).to.exist()
   })
 
   it('should register models with custom name and expose it', async () => {
@@ -238,13 +238,13 @@ describe('Hapi server', () => {
       },
     })
 
-    expect(server.db.UserModel).to.exist()
+    expect(server.db.userModel).to.exist()
 
     server.route({
       method: 'GET',
       path: '/',
       handler(request) {
-        expect(request.db.UserModel).to.exist()
+        expect(request.db.userModel).to.exist()
         return Promise.resolve(null)
       },
     })
