@@ -20,7 +20,7 @@ Some objects are exposed under `server` and `request` by this plugin:
 
 - `connection`: Mongoose connection object, if an array was provided for the configuration, it will be an array of connections in the same order
 - `ObjectID`: mongodb ObjectID constructor in case you need to use it
-- `ModelName`: Your registered models are exposed as `server.db.ModelName` and `request.db.ModelName`.
+- `modelName`: Your registered models are exposed as `server.db.className` and `request.db.className`.
 
 Options example:
 ```js
@@ -45,7 +45,7 @@ A model will receive in its constructor an object with three properties:
 
 * `connection`: The Mongoose connection object
 * `collection`: The collection name. It becomes optional if you add a default value to the `collection` param in your model, like the example below.
-* `name`: The model name that is used to access the exposed object. If `name` = `UserModel`, it'll be accessible as `server.db.UserModel`. If you don't provide the `name`, the class name is used
+* `name`: The model name that is used to access the exposed object. If `name` = `CustomName`, it'll be accessible as `server.db.CustomName`. If you don't provide the `name`, the class name is used with first letter in lowercase, like `server.db.className`
 
 Model example:
 ```js
@@ -99,10 +99,10 @@ const launchServer = async function() {
     method: 'GET',
     path: '/users/{id}',
     async handler(request) {
-      const {db: {UserModel}, param: {id}} = request;
+      const {db: {userModel}, param: {id}} = request;
 
       try {
-        const result = await UserModel.findById(id);
+        const result = await userModel.findById(id);
         return result;
       }
       catch (err) {
