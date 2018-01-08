@@ -1,6 +1,6 @@
 # Hapi-mongodb-models
 
-A Hapi MongoDB (via Mongoose) plugin. Access one or several connections and optionally expose your model classes through server and request
+A Hapi v17+ MongoDB (via Mongoose 5+) plugin. Access one or several connections and optionally expose your model classes through server and request
 
 Options can be a single object with the following keys or an array of the same kind if you need multiple connections:
 

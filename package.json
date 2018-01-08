@@ -2,7 +2,7 @@
   "name": "hapi-mongodb-models",
   "version": "0.1.0",
   "description":
-    "A Hapi MongoDB (via Mongoose) plugin. Access one or several connections through server or request",
+    "A Hapi v17+ MongoDB (via Mongoose 5+) plugin. Access one or several connections and optionally expose your model classes through server and request",
   "main": "lib/index.js",
   "scripts": {
     "test": "lab -M 5000 -t 100 -a code -L",
