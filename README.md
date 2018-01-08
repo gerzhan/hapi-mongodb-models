@@ -2,6 +2,8 @@
 
 A Hapi v17+ MongoDB (via Mongoose 5+) plugin. Access one or several connections and optionally expose your model classes through server and request
 
+[See this plugin in action](https://github.com/oPauloChaves/zssn-hapi-api)
+
 Options can be a single object with the following keys or an array of the same kind if you need multiple connections:
 
 - `url`: *Optional.* MongoDB connection string (eg. `mongodb://user:pass@localhost:27017`).
