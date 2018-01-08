@@ -32,7 +32,7 @@ Options example:
   rootDir: '/project/root/dir',
   models: [{
     path: 'rootDir/path/to/models/User',
-    name: 'UserModel',
+    name: 'CustomName',
     collection: 'users'
   }]
   decorate: true
@@ -45,7 +45,7 @@ A model will receive in its constructor an object with three properties:
 
 * `connection`: The Mongoose connection object
 * `collection`: The collection name. It becomes optional if you add a default value to the `collection` param in your model, like the example below.
-* `name`: The model name that is used to access the exposed object. If `name` = `CustomName`, it'll be accessible as `server.db.CustomName`. If you don't provide the `name`, the class name is used with first letter in lowercase, like `server.db.className`
+* `name`: The model name that is used to access the exposed object. If `name = 'CustomName'`, it'll be accessible as `server.db.CustomName`. If you don't provide the `name`, the class name is used with first letter in lowercase, like `server.db.className`
 
 Model example:
 ```js
